@@ -1,10 +1,10 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { IUser } from './user.interface';
+import { IUser, UserModel } from './user.interface';
 import { UserRoleEnum } from './user.constant';
 import config from '../../config';
 
-const userSchema = new Schema<IUser>(
+const userSchema = new Schema<IUser, UserModel>(
   {
     username: {
       type: String,
@@ -35,8 +35,15 @@ const userSchema = new Schema<IUser>(
 userSchema.pre('save', async function (next) {
   const password = this.password;
   const hashedPassword = await bcrypt.hash(password, config.saltRound);
-  this.password = hashedPassword
-  next()
+  this.password = hashedPassword;
+  next();
 });
 
-export const User = model<IUser>('User', userSchema);
+userSchema.statics.isPasswordMatched = async function (
+  planeTextPassword: string,
+  hashedPassword: string,
+) {
+  return await bcrypt.compare(planeTextPassword,hashedPassword);
+};
+
+export const User = model<IUser, UserModel>('User', userSchema);
