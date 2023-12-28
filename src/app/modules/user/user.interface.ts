@@ -1,4 +1,7 @@
-import { Model } from "mongoose";
+/* eslint-disable no-unused-vars */
+import { Model } from 'mongoose';
+import { USER_ROLE } from './user.constant';
+import { Types } from 'mongoose';
 
 export interface IUser {
   username: string;
@@ -8,6 +11,16 @@ export interface IUser {
 }
 
 export interface UserModel extends Model<IUser> {
-  // eslint-disable-next-line no-unused-vars
-  isPasswordMatched(planeTextPassword:string,hashedPassword:string): Promise<boolean>;
+  isPasswordMatched(
+    planeTextPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean>;
+}
+
+export type TUserRole = keyof typeof USER_ROLE;
+
+export interface IPasswordHistory {
+  userId: Types.ObjectId;
+  previousPassword: string;
+  currentPassword: string;
 }
