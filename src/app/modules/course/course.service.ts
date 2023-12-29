@@ -6,8 +6,9 @@ import { TCourse } from './course.interface';
 import { Course } from './course.model';
 import AppError from '../../errors/appError';
 import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 
-const createCourseIntoDB = async (payload: TCourse) => {
+const createCourseIntoDB = async (userData: JwtPayload, payload: TCourse) => {
   const { startDate, endDate } = payload;
   const convertedStartDate: Date = new Date(startDate);
   const convertedEndDate: Date = new Date(endDate);
@@ -17,13 +18,17 @@ const createCourseIntoDB = async (payload: TCourse) => {
   const days = convertedEndDate.getTime() - convertedStartDate.getTime();
 
   payload.durationInWeeks = Math.ceil(days / (1000 * 60 * 60 * 24 * 7));
+  payload.createdBy = userData._id;
 
   const result = await Course.create(payload);
   return result;
 };
 
 const getAllCourseFromDB = async (query: Record<string, unknown>) => {
-  const courseQuery = new QueryManager(Course.find(), query)
+  const courseQuery = new QueryManager(
+    Course.find().populate('createdBy'),
+    query,
+  )
     .pagination()
     .sortBy()
     .filterByPrice()
@@ -69,7 +74,7 @@ const getCourseWithReviewFromDB = async (id: Types.ObjectId) => {
     },
   ]);
 
-  const course = await Course.findById(id);
+  const course = await Course.findById(id).populate('createdBy');
 
   const reviews = findCourseReview[0].reviews;
 
@@ -181,7 +186,7 @@ const updateCourseDataIntoDB = async (
     await session.commitTransaction();
     await session.endSession();
 
-    const course = await Course.findById(id);
+    const course = await Course.findById(id).populate('createdBy');
 
     return course;
   } catch (err) {

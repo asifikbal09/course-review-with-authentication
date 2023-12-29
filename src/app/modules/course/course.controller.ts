@@ -6,7 +6,8 @@ import catchAsync from '../../utils/catchAsync';
 
 const createCourse = catchAsync(async (req: Request, res: Response) => {
   const course = req.body;
-  const result = await CourseServices.createCourseIntoDB(course);
+  const userData = req.user;
+  const result = await CourseServices.createCourseIntoDB(userData, course);
   res.status(httpStatus.OK).json({
     success: true,
     message: 'Course created successfully.',

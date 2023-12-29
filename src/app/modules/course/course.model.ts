@@ -75,6 +75,10 @@ const courseSchema = new Schema<TCourse, CourseModel>({
     type: detailsSchema,
     required: true,
   },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
 });
 
 // studentSchema.statics.isUserExists = async function (id: string) {

@@ -21,6 +21,15 @@ export type TUserRole = keyof typeof USER_ROLE;
 
 export interface IPasswordHistory {
   userId: Types.ObjectId;
+  prePreviousPassword: string;
   previousPassword: string;
   currentPassword: string;
+  passwordChangeAt: Date;
+}
+
+export interface PasswordHistoryModel extends Model<IPasswordHistory> {
+  isJWTIssuedBeforePasswordChanged(
+    passwordChangedTimestamp: Date,
+    jwtIssuedTimestamp: number,
+  ): boolean;
 }

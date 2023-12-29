@@ -55,7 +55,7 @@ The Course Review Backend project encompasses eight distinct routes, each tailor
 
 1.  **Create Course (POST):**
     
-    - Endpoint: `/api/course`
+    - Endpoint: `/api/courses`
     - Method: POST
     - Description: Create a new course with essential details.
 

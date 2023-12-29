@@ -1,6 +1,11 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { IPasswordHistory, IUser, UserModel } from './user.interface';
+import {
+  IPasswordHistory,
+  IUser,
+  PasswordHistoryModel,
+  UserModel,
+} from './user.interface';
 import { UserRoleEnum } from './user.constant';
 import config from '../../config';
 
@@ -18,8 +23,8 @@ const userSchema = new Schema<IUser, UserModel>(
     },
     password: {
       type: String,
-      required: true,
       select: 0,
+      required: true,
     },
     role: {
       type: String,
@@ -32,21 +37,37 @@ const userSchema = new Schema<IUser, UserModel>(
   },
 );
 
-const passwordHistorySchema = new Schema<IPasswordHistory>({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const passwordHistorySchema = new Schema<
+  IPasswordHistory,
+  PasswordHistoryModel
+>(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      unique: true,
+      required: true,
+    },
+    prePreviousPassword: {
+      type: String,
+      default: '',
+    },
+    previousPassword: {
+      type: String,
+      default: '',
+    },
+    currentPassword: {
+      type: String,
+      required: true,
+    },
+    passwordChangeAt: {
+      type: Date,
+    },
   },
-  previousPassword: {
-    type: String,
-    required: true,
+  {
+    timestamps: true,
   },
-  currentPassword: {
-    type: String,
-    required: true,
-  },
-});
+);
 
 userSchema.pre('save', async function (next) {
   const password = this.password;
@@ -62,9 +83,18 @@ userSchema.statics.isPasswordMatched = async function (
   return await bcrypt.compare(planeTextPassword, hashedPassword);
 };
 
+passwordHistorySchema.statics.isJWTIssuedBeforePasswordChanged = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedTimestamp: number,
+) {
+  const passwordChangedTime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  return passwordChangedTime > jwtIssuedTimestamp;
+};
+
 export const User = model<IUser, UserModel>('User', userSchema);
 
-export const PasswordHistory = model<IPasswordHistory>(
+export const PasswordHistory = model<IPasswordHistory, PasswordHistoryModel>(
   'PasswordHistory',
   passwordHistorySchema,
 );

@@ -3,7 +3,10 @@ import catchAsync from '../../utils/catchAsync';
 import { ReviewServices } from './review.service';
 
 const createReviewForCourse = catchAsync(async (req, res) => {
-  const result = await ReviewServices.createReviewForCourseIntoDB(req.body);
+  const result = await ReviewServices.createReviewForCourseIntoDB(
+    req.user,
+    req.body,
+  );
 
   res.status(httpStatus.CREATED).json({
     success: true,
